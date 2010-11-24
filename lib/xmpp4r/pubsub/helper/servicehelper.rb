@@ -349,8 +349,8 @@ module Jabber
       # shows the affiliations on a pubsub service
       # node:: [String]
       # return:: [Hash] of { node => symbol }
-      def get_affiliations(node = nil)
-        iq = basic_pubsub_query(:get)
+      def get_affiliations(node = nil, owner=false)
+        iq = basic_pubsub_query(:get, owner)
         affiliations = iq.pubsub.add(REXML::Element.new('affiliations'))
         affiliations.attributes['node'] = node
         res = nil
