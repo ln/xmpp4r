@@ -58,7 +58,7 @@ module Jabber
           }
 
           # Invoke...
-          @join_block.call(time, pres.from.resource) if @join_block
+          on_join(time, pres)
           false
         }
 
@@ -75,9 +75,9 @@ module Jabber
 
           # Invoke...
           if pres.from == jid
-            @self_leave_block.call(time) if @self_leave_block
+            on_self_leave(time)
           else
-            @leave_block.call(time, pres.from.resource) if @leave_block
+            on_leave(time, pres)
           end
           false
         }
@@ -100,17 +100,17 @@ module Jabber
 
         if msg.subject
           @subject = msg.subject
-          @subject_block.call(time, sender_nick, @subject) if @subject_block
+          on_subject(time, sender_nick, @subject)
         end
 
         if msg.body
           if sender_nick.nil?
-            @room_message_block.call(time, msg.body) if @room_message_block
+            on_room_message(time, msg)
           else
             if msg.type == :chat
-              @private_message_block.call(time, msg.from.resource, msg.body) if @private_message_block
+              on_private_message(time, msg)
             elsif msg.type == :groupchat
-              @message_block.call(time, msg.from.resource, msg.body) if @message_block
+              on_message(time, msg)
             else
               # ...?
             end
@@ -274,31 +274,47 @@ module Jabber
       # Example:
       #   Astro has joined this session
       # block:: Takes two arguments: time, text
-      def on_room_message(&block)
-        @room_message_block = block
+      def on_room_message(time = nil, msg = nil, &block)
+        if block_given?
+          @room_message_block = block
+        elsif @room_message_block
+          @room_message_block.call(time, msg.body)
+        end
       end
 
       ##
       # Block to be invoked when a message from a participant to
       # the whole room arrives
       # block:: Takes three arguments: time, sender nickname, text
-      def on_message(&block)
-        @message_block = block
+      def on_message(time = nil, msg = nil, &block)
+        if block_given?
+          @message_block = block
+        elsif @message_block
+          @message_block.call(time, msg.from.resource, msg.body)
+        end
       end
 
       ##
       # Block to be invoked when a private message from a participant
       # to you arrives.
       # block:: Takes three arguments: time, sender nickname, text
-      def on_private_message(&block)
-        @private_message_block = block
+      def on_private_message(time = nil, msg = nil, &block)
+        if block_given?
+          @private_message_block = block
+        elsif @private_message_block
+          @private_message_block.call(time, msg.from.resource, msg.body)
+        end
       end
 
       ##
       # Block to be invoked when somebody sets a new room subject
       # block:: Takes three arguments: time, nickname, new subject
-      def on_subject(&block)
-        @subject_block = block
+      def on_subject(time = nil, sender_nick = nil, &block)
+        if block_given?
+          @subject_block = block
+        elsif @subject_block
+          @subject_block.call(time, sender_nick, @subject)
+        end
       end
 
       ##
@@ -308,15 +324,23 @@ module Jabber
       # are great that this is initial presence from a participant
       # after you have joined the room.
       # block:: Takes two arguments: time, nickname
-      def on_join(&block)
-        @join_block = block
+      def on_join(time = nil, pres = nil, &block)
+        if block_given?
+          @join_block = block
+        elsif @join_block
+          @join_block.call(time, pres.from.resource)
+        end
       end
 
       ##
       # Block to be called when somebody leaves the room
       # block:: Takes two arguments: time, nickname
-      def on_leave(&block)
-        @leave_block = block
+      def on_leave(time = nil, pres = nil, &block)
+        if block_given?
+          @leave_block = block
+        elsif @leave_block
+          @leave_block.call(time, pres.from.resource)
+        end
       end
 
       ##
@@ -324,8 +348,12 @@ module Jabber
       #
       # Deactivation occurs *afterwards*.
       # block:: Takes one argument: time
-      def on_self_leave(&block)
-        @self_leave_block = block
+      def on_self_leave(time = nil, &block)
+        if block_given?
+          @self_leave_block = block
+        elsif @self_leave_block
+          @self_leave_block.call(time)
+        end
       end
     end
   end
