@@ -172,6 +172,8 @@ module Jabber
 
       # Restart stream after SASL auth
       stop
+      while @parser_thread.alive? do
+      end
       start
       # And wait for features - again
       @features_sem.wait
