@@ -145,6 +145,7 @@ module Jabber
 
         # Context/user set-able stuff
         ctx = OpenSSL::SSL::SSLContext.new
+        ctx.ssl_version = :SSLv3
         if @ssl_capath
           ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER
           ctx.ca_path = @ssl_capath
