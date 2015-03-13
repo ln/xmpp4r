@@ -9,7 +9,7 @@ include Jabber
 
 # settings
 if ARGV.length != 2
-  puts "Run with ./echo_thread.rb user@server/resource password"
+  puts "Run with ./echo.rb user@server/resource password"
   exit 1
 end
 myJID = JID.new(ARGV[0])
